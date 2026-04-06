@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIMAS - Sistem Manajemen Sampah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#16a34a" />
+    <link rel="apple-touch-icon" href="icon-192x192.png" />
+    <style>
+      /* Menggunakan font Inter sebagai default */
+      body {
+        font-family: "Inter", sans-serif;
+        /* Transisi untuk warna latar belakang */
+        @apply transition-colors duration-300;
+      }
+      /* Custom class untuk transisi yang mulus */
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      /* Custom scrollbar untuk daftar TPS */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #475569;
+      }
+      /* Background pattern untuk login/register */
+      .login-bg {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2394a3b8' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+    </style>
+    <script>
+      // Menambahkan konfigurasi dark mode untuk Tailwind
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              gray: tailwind.colors.slate,
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-slate-100 dark:bg-slate-900 min-h-screen flex flex-col login-bg"
+  >
+    <header
+      class="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-50 transition-colors duration-300"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-2">
+          <div class="bg-green-100 dark:bg-green-900 p-2 rounded-lg">
+            <svg
+              class="w-6 h-6 text-green-600 dark:text-green-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m14 0H5"
+              ></path>
+            </svg>
+          </div>
+          <h1
+            class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight"
+          >
+            SIMAS
+          </h1>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <span
+            id="headerUserNav"
+            class="text-sm font-semibold text-slate-600 dark:text-slate-400 hidden md:block"
+          ></span>
+          <button
+            id="langToggle"
+            class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-full text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            ID
+          </button>
+          <button
+            id="darkModeToggle"
+            class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 p-2 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <svg
+              id="moonIcon"
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              ></path>
+            </svg>
+            <svg
+              id="sunIcon"
+              class="w-4 h-4 hidden"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a4 4 0 11-8 0 4 4 0 018 0z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section
+      id="login-view"
+      class="flex-grow flex items-center justify-center p-4 fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700"
+      >
+        <div class="p-8">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">
+              Selamat Datang
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">
+              Masuk untuk mengakses dashboard manajemen sampah.
+            </p>
+          </div>
+          <form id="loginForm" class="space-y-6">
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Email</label
+              >
+              <div class="relative">
+                <input
+                  type="email"
+                  id="email"
+                  class="pl-4 block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  placeholder="Masukkan email"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Password</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="password"
+                  class="pl-4 block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors transform hover:scale-[1.02]"
+            >
+              Masuk
+            </button>
+          </form>
+          <div class="mt-6 text-center">
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+              Belum punya akun?
+              <button
+                id="btnToRegister"
+                type="button"
+                class="font-medium text-green-600 hover:text-green-500 dark:text-green-400 underline focus:outline-none"
+              >
+                Daftar di sini
+              </button>
+            </p>
+          </div>
+        </div>
+        <div
+          class="px-8 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-700 flex justify-center"
+        >
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            © 2026 Pemerintah Kota Malang
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="register-view"
+      class="flex-grow flex items-center justify-center p-4 hidden fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700"
+      >
+        <div class="p-8">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">
+              Buat Akun Baru
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">
+              Daftar untuk mulai menggunakan SIMAS.
+            </p>
+          </div>
+          <form id="registerForm" class="space-y-4">
+            <div>
+              <label
+                for="regName"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Nama Lengkap</label
+              >
+              <input
+                type="text"
+                id="regName"
+                class="block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="Nama Anda"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="regEmail"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="regEmail"
+                class="block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="Alamat Email"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="regRole"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Daftar Sebagai</label
+              >
+              <select
+                id="regRole"
+                class="block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+              >
+                <option value="public">Masyarakat Umum</option>
+                <option value="officer">Petugas Kebersihan</option>
+                <option value="admin">Admin Pemerintah</option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="regPassword"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="regPassword"
+                class="block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="regConfirmPassword"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Konfirmasi Password</label
+              >
+              <input
+                type="password"
+                id="regConfirmPassword"
+                class="block w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors transform hover:scale-[1.02] mt-6"
+            >
+              Daftar Akun
+            </button>
+          </form>
+          <div class="mt-6 text-center">
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+              Sudah punya akun?
+              <button
+                id="btnToLogin"
+                type="button"
+                class="font-medium text-green-600 hover:text-green-500 dark:text-green-400 underline focus:outline-none"
+              >
+                Masuk di sini
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main
+      id="dashboard-view"
+      class="container mx-auto p-4 md:p-8 flex-grow hidden"
+    >
+      <section
+        id="adminPanel"
+        class="bg-slate-800 dark:bg-slate-700 text-white p-6 rounded-lg shadow-lg mb-8 hidden fade-in"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <div class="bg-yellow-500 p-2 rounded-lg">
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+              </svg>
+            </div>
+            <h2 class="text-lg font-bold">Panel Admin & Operasional</h2>
+          </div>
+          <span
+            class="text-xs bg-slate-600 px-2 py-1 rounded border border-slate-500"
+            >Akses Terbatas</span
+          >
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onclick="
+              alert(
+                'Simulasi: Armada tambahan telah dikerahkan ke titik overload!',
+              )
+            "
+            class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+          >
+            Kerahkan Armada (Darurat)
+          </button>
+          <button
+            onclick="
+              alert(
+                'Simulasi: Status sensor IoT di-reset. Data pengambilan telah dicatat.',
+              )
+            "
+            class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+          >
+            Reset Sensor & Verifikasi
+          </button>
+          <button
+            onclick="
+              alert('Simulasi: Mengunduh laporan_harian_sampah_malang.csv...')
+            "
+            class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg font-medium transition-colors border border-slate-500"
+          >
+            Unduh Laporan Harian
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg mb-8 fade-in"
+      >
+        <div
+          class="flex flex-col md:flex-row md:justify-between md:items-center mb-4"
+        >
+          <h2 class="text-xl font-semibold text-slate-700 dark:text-slate-200">
+            Panel Kontrol Analisis
+          </h2>
+          <button
+            id="logoutButton"
+            class="text-sm text-red-500 hover:text-red-700 font-medium mt-2 md:mt-0"
+          >
+            Keluar
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label
+              for="kelurahanSelect"
+              class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2"
+              >Pilih Kecamatan</label
+            >
+            <select
+              id="kelurahanSelect"
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="">-- Tampilkan Data Area --</option>
+              <option value="Lowokwaru">Lowokwaru</option>
+              <option value="Blimbing">Blimbing</option>
+              <option value="Klojen">Klojen</option>
+              <option value="Sukun">Sukun</option>
+              <option value="Kedungkandang">Kedungkandang</option>
+            </select>
+          </div>
+          <div id="routeControlContainer">
+            <label
+              for="routeSelect"
+              class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2"
+              >Pilihan Jalur Distribusi</label
+            >
+            <select
+              id="routeSelect"
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="optimal">Rute Optimal (Prediksi BDA)</option>
+              <option value="standar">Rute Standar (Konvensional)</option>
+            </select>
+          </div>
+          <div class="md:mt-7">
+            <button
+              id="showDataButton"
+              class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-semibold shadow-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Tampilkan Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="hidden fade-in">
+        <div class="mb-8">
+          <h3
+            id="areaTitle"
+            class="text-2xl font-bold text-slate-800 dark:text-white mb-4"
+          ></h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              class="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-lg flex items-center space-x-4"
+            >
+              <div class="bg-blue-100 p-3 rounded-full">
+                <svg
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                  Prediksi Volume (Besok)
+                </p>
+                <p
+                  id="statPrediksi"
+                  class="text-xl font-bold text-slate-900 dark:text-white"
+                ></p>
+              </div>
+            </div>
+            <div
+              id="efisiensiCard"
+              class="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-lg flex items-center space-x-4"
+            >
+              <div class="bg-green-100 p-3 rounded-full">
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                  Estimasi Efisiensi Rute
+                </p>
+                <p
+                  id="statEfisiensi"
+                  class="text-lg font-bold text-slate-900 dark:text-white"
+                ></p>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-lg flex items-center space-x-4"
+            >
+              <div class="bg-yellow-100 p-3 rounded-full">
+                <svg
+                  class="w-6 h-6 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m14 0H5"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                  TPS Prioritas
+                </p>
+                <p
+                  id="statPrioritas"
+                  class="text-xl font-bold text-slate-900 dark:text-white"
+                ></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+          <div
+            id="chartContainer"
+            class="lg:col-span-3 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg transition-all duration-300"
+          >
+            <h3
+              class="text-lg font-semibold text-slate-800 dark:text-white mb-4"
+            >
+              Grafik Volume Sampah (7 Hari Terakhir)
+            </h3>
+            <div class="h-80"><canvas id="wasteChart"></canvas></div>
+          </div>
+          <div
+            id="mapContainer"
+            class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg"
+          >
+            <h3
+              class="text-lg font-semibold text-slate-800 dark:text-white mb-4"
+            >
+              Visualisasi Jalur Distribusi
+            </h3>
+            <p
+              id="routeDescription"
+              class="text-sm text-slate-600 dark:text-slate-400 mb-4"
+            ></p>
+            <div
+              class="w-full h-80 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden"
+            >
+              <iframe
+                id="routeMap"
+                class="w-full h-full border-0"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126438.25008272216!2d112.56166164323214!3d-7.982823195120531!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e788274d9f109a1%3A0x40a8f6f59d9c2f6d!2sMalang%2C%20Malang%20City%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1731779500000!5m2!1sen!2sid"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div
+            class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-slate-800 dark:text-white">
+                <span class="flex items-center gap-2">
+                  <svg
+                    class="w-5 h-5 text-red-500 animate-pulse"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
+                    ></path>
+                  </svg>
+                  Status TPS
+                </span>
+              </h3>
+            </div>
+            <div
+              class="space-y-4 overflow-y-auto max-h-64 custom-scrollbar pr-2"
+              id="iotStatusList"
+            ></div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg">
+            <h3
+              class="text-lg font-semibold text-slate-800 dark:text-white mb-4"
+            >
+              Komposisi Sampah
+            </h3>
+            <div class="h-64 flex justify-center">
+              <canvas id="compositionChart"></canvas>
+            </div>
+            <p class="text-xs text-center text-slate-500 mt-4 italic">
+              Data estimasi berdasarkan sampling terakhir
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer
+      class="mt-auto py-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700"
+    >
+      <div class="text-center text-slate-500 dark:text-slate-400 text-sm">
+        <p class="font-medium">
+          Sistem Manajemen Distribusi Sampah Terintegrasi (SIMAS)
+        </p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+      import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+      // ---------------------------------------------------------
+      // PERHATIAN: MASUKKAN KONFIGURASI API KEY ANDA DI BAWAH INI
+      // ---------------------------------------------------------
+      const firebaseConfig = {
+        apiKey: "AIzaSyCR81YUJ8LzoiSS64Pz8KP0Qg4izoutJrE",
+        authDomain: "simas-8dd26.firebaseapp.com",
+        projectId: "simas-8dd26",
+        storageBucket: "simas-8dd26.firebasestorage.app",
+        messagingSenderId: "425461721350",
+        appId: "1:425461721350:android:04ae5cf2721d9c216a1687",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // Data Simulasi (Mock Data) untuk Dashboard
+      const mockData = {
+        Lowokwaru: {
+          labels: [
+            "Senin",
+            "Selasa",
+            "Rabu",
+            "Kamis",
+            "Jumat",
+            "Sabtu",
+            "Minggu",
+          ],
+          chartData: [175.2, 188.1, 180.5, 192.3, 185.0, 201.4, 190.7],
+          routeOptimal: {
+            img: "https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d15805.137839611593!2d112.59775835!3d-7.9702221!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x2e78821c1106c679%3A0x6b74b6c3e601c2e7!2sTPS%20Dinoyo%20Permai!3m2!1d-7.941329!2d112.607446!4m5!1s0x2e78820b1e42c51f%3A0x6d9a01e3b5e43b7!2sTPS%20TAWANGMANGU%2C%20Jl.%20Tawangmangu%20No.16%2C%20Lowokwaru%2C%20Kec.%20Lowokwaru%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065141!3m2!1d-7.955414!2d112.612613!4m5!1s0x2e78821e45c09d57%3A0x833b652f1b4009b0!2sTPS%20sumbersari%20kota%20malang%2C%20Jl.%20Bendungan%20Sutami%20No.54SumbersariKec%2C%20Kec.%20Lowokwaru%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065145!3m2!1d-7.9613133!2d112.6106691!4m5!1s0x2e7883391264c01b%3A0xad035b0b28e6702e!2sTPA%20Supit%20Urang!3m2!1d-8.0142079!2d112.601552!5e0!3m2!1sen!2sid!4v1731807000000!5m2!1sen!2sid",
+            desc: "Rute BDA: Rute klasterisasi berdasarkan 3 TPS terpadat.",
+          },
+          routeStandar: {
+            img: "https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d15805.137839611593!2d112.59775834999999!3d-7.970222099999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x2e78820b1e42c51f%3A0x6d9a01e3b5e43b7!2sTPS%20TAWANGMANGU%2C%20Jl.%20Tawangmangu%20No.16%2C%20Lowokwaru%2C%20Kec.%20Lowokwaru%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065141!3m2!1d-7.955414!2d112.612613!4m5!1s0x2e7883391264c01b%3A0xad035b0b28e6702e!2sTPA%20Supit%20Urang!3m2!1d-8.0142079!2d112.601552!5e0!3m2!1sen!2sid!4v1731794022834!5m2!1sen!2sid",
+            desc: "Rute Konvensional: Rute reaktif 2 titik.",
+          },
+          stats: {
+            prediksi: "193.5 Ton",
+            efisiensi: "Waktu 22%, BBM 15%",
+            prioritas: "Dinoyo, Tawangmangu, Sumbersari",
+          },
+          iotStatus: [
+            { name: "TPS Tawangmangu", load: 88, status: "Kritis" },
+            { name: "TPS Dinoyo Permai", load: 65, status: "Normal" },
+          ],
+          composition: [61, 18, 12, 9],
+        },
+        Blimbing: {
+          labels: [
+            "Senin",
+            "Selasa",
+            "Rabu",
+            "Kamis",
+            "Jumat",
+            "Sabtu",
+            "Minggu",
+          ],
+          chartData: [150.1, 155.3, 160.2, 148.9, 165.0, 170.1, 158.4],
+          routeOptimal: {
+            img: "https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d15806.31911475713!2d112.60790895!3d-7.9395277!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x2e78829340c34f39%3A0x335914f6b6e71e3a!2sTPS%20Terminal%20Arjosari!3m2!1d-7.9300645!2d112.6567215!4m5!1s0x2e7882a026e28e35%3A0x5503346a7e560036!2sTPS%20cakalang%2C%20Jl.%20Cakalang%20No.2f%2C%20Polowijen%2C%20Blimbing%2C%20Malang%20City%2C%20East%20Java%2065126!3m2!1d-7.934912!2d112.642154!4m5!1s0x2e78829c20f182c1%3A0x2368c348f219504c!2sTPS%20Sulfat!3m2!1d-7.957538!2d112.645511!4m5!1s0x2e7883391264c01b%3A0xad035b0b28e6702e!2sTPA%20Supit%20Urang!3m2!1d-8.0142079!2d112.601552!5e0!3m2!1sen!2sid!4v1731808000000!5m2!1sen!2sid",
+            desc: "Rute BDA: Rute klasterisasi (4 titik).",
+          },
+          routeStandar: {
+            img: "https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d15806.31911475713!2d112.60790895!3d-7.9395277!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x2e78829340c34f39%3A0x335914f6b6e71e3a!2sTPS%20Terminal%20Arjosari!3m2!1d-7.9300645!2d112.6567215!4m5!1s0x2e7883391264c01b%3A0xad035b0b28e6702e!2sTPA%20Supit%20Urang!3m2!1d-8.0142079!2d112.601552!5e0!3m2!1sen!2sid!4v1731794318725!5m2!1sen!2sid",
+            desc: "Rute Konvensional: Rute reaktif 2 titik.",
+          },
+          stats: {
+            prediksi: "168.0 Ton",
+            efisiensi: "Waktu 18%, BBM 12%",
+            prioritas: "TPS Arjosari, Cakalang, Sulfat",
+          },
+          iotStatus: [
+            { name: "TPS Arjosari", load: 92, status: "Kritis" },
+            { name: "TPS Cakalang", load: 78, status: "Waspada" },
+          ],
+          composition: [58, 22, 10, 10],
+        },
+      };
+
+      let currentUserRole = "public";
+      let wasteChartInstance = null;
+      let compositionChartInstance = null;
+
+      // --- Referensi Elemen DOM ---
+      const loginView = document.getElementById("login-view");
+      const registerView = document.getElementById("register-view");
+      const dashboardView = document.getElementById("dashboard-view");
+      const headerUserNav = document.getElementById("headerUserNav");
+      const mapContainer = document.getElementById("mapContainer");
+      const routeControlContainer = document.getElementById(
+        "routeControlContainer",
+      );
+      const efisiensiCard = document.getElementById("efisiensiCard");
+      const chartContainer = document.getElementById("chartContainer");
+      const adminPanel = document.getElementById("adminPanel");
+      const resultsSection = document.getElementById("results");
+
+      // --- Logika Penanganan UI ---
+      document.getElementById("btnToRegister").addEventListener("click", () => {
+        loginView.classList.add("hidden");
+        registerView.classList.remove("hidden");
+      });
+      document.getElementById("btnToLogin").addEventListener("click", () => {
+        registerView.classList.add("hidden");
+        loginView.classList.remove("hidden");
+      });
+
+      function adjustLayoutBasedOnRole(role) {
+        currentUserRole = role;
+        loginView.classList.add("hidden");
+        registerView.classList.add("hidden");
+        dashboardView.classList.remove("hidden");
+        headerUserNav.classList.remove("hidden");
+
+        mapContainer.classList.remove("hidden");
+        routeControlContainer.classList.remove("hidden");
+        efisiensiCard.classList.remove("hidden");
+        adminPanel.classList.add("hidden");
+        chartContainer.classList.remove("lg:col-span-5");
+        chartContainer.classList.add("lg:col-span-3");
+
+        if (role === "public") {
+          headerUserNav.textContent = "Dashboard Masyarakat";
+          mapContainer.classList.add("hidden");
+          routeControlContainer.classList.add("hidden");
+          efisiensiCard.classList.add("hidden");
+          chartContainer.classList.remove("lg:col-span-3");
+          chartContainer.classList.add("lg:col-span-5");
+        } else if (role === "officer") {
+          headerUserNav.textContent = "Dashboard Petugas";
+        } else {
+          headerUserNav.textContent = "Dashboard Admin Pemerintah";
+          adminPanel.classList.remove("hidden");
+        }
+        resultsSection.classList.add("hidden");
+        document.getElementById("kelurahanSelect").value = "";
+      }
+
+      // --- Logika Firebase ---
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("regEmail").value;
+          const password = document.getElementById("regPassword").value;
+          const confirmPassword =
+            document.getElementById("regConfirmPassword").value;
+          const name = document.getElementById("regName").value;
+          const role = document.getElementById("regRole").value;
+
+          if (password !== confirmPassword) {
+            alert("Kesalahan validasi: Kata sandi konfirmasi tidak identik.");
+            return;
+          }
+
+          try {
+            const userCredential = await createUserWithEmailAndPassword(
+              auth,
+              email,
+              password,
+            );
+            await setDoc(doc(db, "users", userCredential.user.uid), {
+              name: name,
+              email: email,
+              role: role,
+            });
+            alert(
+              "Protokol registrasi sukses. Profil Anda telah terotentikasi dalam peladen.",
+            );
+          } catch (error) {
+            alert("Kegagalan prosedur registrasi: " + error.message);
+          }
+        });
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+          } catch (error) {
+            alert(
+              "Otorisasi ditolak: Kredensial tidak divalidasi oleh sistem.",
+            );
+          }
+        });
+
+      document
+        .getElementById("logoutButton")
+        .addEventListener("click", async () => {
+          try {
+            await signOut(auth);
+            document.getElementById("loginForm").reset();
+            document.getElementById("registerForm").reset();
+          } catch (error) {
+            console.error("Anomali pada pemutusan sesi komputasi:", error);
+          }
+        });
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            const docSnap = await getDoc(doc(db, "users", user.uid));
+            if (docSnap.exists()) {
+              adjustLayoutBasedOnRole(docSnap.data().role);
+            } else {
+              adjustLayoutBasedOnRole("public");
+            }
+          } catch (error) {
+            console.error("Sinkronisasi arsitektur data gagal:", error);
+          }
+        } else {
+          dashboardView.classList.add("hidden");
+          headerUserNav.classList.add("hidden");
+          loginView.classList.remove("hidden");
+        }
+      });
+
+      // --- Logika Grafik (Chart.js) ---
+      document
+        .getElementById("showDataButton")
+        .addEventListener("click", () => {
+          const kelurahan = document.getElementById("kelurahanSelect").value;
+          const routeType =
+            currentUserRole === "public"
+              ? "optimal"
+              : document.getElementById("routeSelect").value;
+
+          if (!kelurahan || !mockData[kelurahan]) return;
+
+          resultsSection.classList.remove("hidden");
+          const data = mockData[kelurahan];
+          document.getElementById("areaTitle").textContent =
+            `Analisis Data: Kecamatan ${kelurahan}`;
+          document.getElementById("statPrediksi").textContent =
+            data.stats.prediksi;
+          document.getElementById("statPrioritas").textContent =
+            data.stats.prioritas;
+
+          if (currentUserRole !== "public") {
+            document.getElementById("statEfisiensi").textContent =
+              routeType === "optimal"
+                ? data.stats.efisiensi
+                : "Waktu: 0%, BBM: 0% (Baseline)";
+            const routeInfo =
+              routeType === "optimal" ? data.routeOptimal : data.routeStandar;
+            document.getElementById("routeMap").src = routeInfo.img;
+            document.getElementById("routeDescription").textContent =
+              routeInfo.desc;
+          }
+
+          const isDarkMode =
+            document.documentElement.classList.contains("dark");
+          const chartTextColor = isDarkMode ? "#e2e8f0" : "#334155";
+          const gridColor = isDarkMode
+            ? "rgba(226, 232, 240, 0.2)"
+            : "rgba(51, 65, 85, 0.1)";
+
+          if (wasteChartInstance) wasteChartInstance.destroy();
+          wasteChartInstance = new Chart(
+            document.getElementById("wasteChart").getContext("2d"),
+            {
+              type: "line",
+              data: {
+                labels: data.labels,
+                datasets: [
+                  {
+                    label: "Volume Sampah (Ton)",
+                    data: data.chartData,
+                    backgroundColor: "rgba(34, 197, 94, 0.1)",
+                    borderColor: "rgba(34, 197, 94, 1)",
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    ticks: { color: chartTextColor },
+                    grid: { color: gridColor },
+                  },
+                  x: {
+                    ticks: { color: chartTextColor },
+                    grid: { color: gridColor },
+                  },
+                },
+                plugins: { legend: { labels: { color: chartTextColor } } },
+              },
+            },
+          );
+
+          const iotStatusList = document.getElementById("iotStatusList");
+          iotStatusList.innerHTML = "";
+          data.iotStatus.forEach((tps) => {
+            let colorClass =
+              tps.load > 80
+                ? "bg-red-500"
+                : tps.load > 60
+                  ? "bg-yellow-500"
+                  : "bg-green-500";
+            iotStatusList.innerHTML += `<div><div class="flex justify-between mb-1"><span class="text-sm font-medium text-slate-700 dark:text-slate-200">${tps.name}</span><span class="text-sm font-medium text-slate-700 dark:text-slate-200">${tps.load}% (${tps.status})</span></div><div class="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700"><div class="${colorClass} h-2.5 rounded-full" style="width: ${tps.load}%"></div></div></div>`;
+          });
+
+          if (compositionChartInstance) compositionChartInstance.destroy();
+          compositionChartInstance = new Chart(
+            document.getElementById("compositionChart").getContext("2d"),
+            {
+              type: "doughnut",
+              data: {
+                labels: ["Organik", "Plastik", "Kertas", "Lainnya"],
+                datasets: [
+                  {
+                    data: data.composition,
+                    backgroundColor: [
+                      "rgba(34, 197, 94, 0.8)",
+                      "rgba(59, 130, 246, 0.8)",
+                      "rgba(234, 179, 8, 0.8)",
+                      "rgba(100, 116, 139, 0.8)",
+                    ],
+                    borderWidth: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "right",
+                    labels: { color: chartTextColor },
+                  },
+                },
+              },
+            },
+          );
+        });
+
+      // Tema Gelap/Terang
+      document
+        .getElementById("darkModeToggle")
+        .addEventListener("click", () => {
+          document.documentElement.classList.toggle("dark");
+          document.getElementById("moonIcon").classList.toggle("hidden");
+          document.getElementById("sunIcon").classList.toggle("hidden");
+        });
+      document
+        .getElementById("langToggle")
+        .addEventListener("click", function () {
+          this.textContent = this.textContent === "ID" ? "EN" : "ID";
+        });
+    </script>
+    <script>
+      // Registrasi Service Worker PWA
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js");
+        });
+      }
+    </script>
+  </body>
+</html>
